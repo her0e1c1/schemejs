@@ -1,0 +1,24 @@
+{
+  "name": "analyzing_evaluator",
+  "version": "1.0.0",
+  "description": "Analyzing Evaluator In Javascript",
+  "main": "ch4-analyzingmceval.js",
+  "dependencies": {
+    "grunt": "^0.4.5"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "0.11.1",
+    "grunt-contrib-qunit": "0.7.0",
+    "grunt-contrib-watch": "0.6.1",
+    "gulp-mocha": "^2.2.0",
+    "qunitjs": "1.18.0"
+  },
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "sicp"
+  ],
+  "author": "HIROYUKI ISHII",
+  "license": "BSD-2-Clause"
+}
