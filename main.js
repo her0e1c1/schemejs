@@ -81,11 +81,15 @@
 	    }
 
 	    function cons(x, y) {
+	        // TODO: dotted list
+	        if (y.constructor !== Array) {
+	            return [x, y];
+	        }
+
 	        var a =[x];
 	        for (var i = 0; i < y.length; i++) {
 	            a.push(y[i]);
 	        }
-	        debugger;
 	        return a;
 	    }
 
@@ -120,6 +124,7 @@
 	        {'cons': new Primitive(cons)},
 	        {'car': new Primitive(car)},
 	        {'cdr': new Primitive(cdr)},
+	        {'chr': new Primitive(String.fromCharCode)},
 	    ];
 
 
@@ -429,9 +434,6 @@
 	        read: read,
 	        Sym:Sym
 	    };
-
-	    parse("(cdr (cons 1 2))");
-	    
 
 	}());
 

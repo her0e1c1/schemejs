@@ -389,7 +389,4 @@
         Sym:Sym
     };
 
-    parse("(cdr (cons 1 2))");
-    
-
 }());
