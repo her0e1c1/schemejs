@@ -69,6 +69,11 @@
         }
     }
 
+    function alert(x) {
+        if (window !== undefined)
+	        window.alert(x);
+    }
+
     var theGrobalEnvironment = [
         {'+': new Primitive(fold(add2, 0))},
         {'-': new Primitive(fold(sub2, 0))},
@@ -79,6 +84,7 @@
         {'car': new Primitive(car)},
         {'cdr': new Primitive(cdr)},
         {'chr': new Primitive(String.fromCharCode)},
+        {'alert': new Primitive(alert)},
     ];
 
 
@@ -116,7 +122,7 @@
         } else if (token === '#f') {
             return false;
         } else if (token[0] === '"') {
-            return token.substr(1, token.length - 1);
+            return token.substr(1, token.length - 2);
         } else {
             var n = Number(token);
             return isNaN(n) ? Sym(token) : n;
@@ -126,7 +132,7 @@
     class InPort {
         constructor(input) {
             this.input = input;
-            this.tokenizer = /\s*(,@|[('`,)]|"(?:[\\].|[^\\"])*"|;.*|[^\s('"`,;)]*)(.*)/;
+            this.tokenizer = /\s*(,@|[('`,)]|"(?:[\\].|[^\\"])*"|;.*|[^\s('"`,;)]*)([\s\S]*)/;
         }
         next_token() {
             if (this.input === '') {
@@ -389,4 +395,8 @@
         Sym:Sym
     };
 
+    // global variable
+    if (typeof window !== 'undefined') {
+        window.parse = parse;
+    }
 }());
