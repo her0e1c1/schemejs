@@ -2,7 +2,7 @@
 
 var _ = require('underscore');
 var assert = require('assert');
-var ae = require('../src/ch4-analyzingmceval.js');
+var ae = require('../src/eval.js');
 
 describe('atom', function() {
     it('should return -1 when the value is not present', function() {
