@@ -32,6 +32,8 @@ describe('eval', function() {
     it('should return -1 when the value is not present', function() {
         assert.equal(1, ae.parse('(if #t 1 2)'));
         assert.equal(2, ae.parse('(if #f 1 2)'));
+        assert.equal(1, ae.parse('(begin 1)'));
+        assert.equal(1, ae.parse('(begin\n1)'));
         assert.equal(2, ae.parse('(begin 1 2)'));
         assert.equal(undefined, ae.parse('(define a 1)'));
         assert.equal(1, ae.parse('(begin (define a 1) a)'));
