@@ -17,6 +17,7 @@ describe('read', function() {
         assert.equal(false, ae.read('#f'));
         assert.equal(12345, ae.read('12345'));
         assert.equal(123.45, ae.read('123.45'));
+        assert.equal('abcde', ae.read('"abcde"'));
 
         var r = ae.read('(if #t 1 2)');
         assert.equal(true, _.isEqual([true, 1, 2], r.slice(1)));
