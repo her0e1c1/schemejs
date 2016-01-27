@@ -5,14 +5,14 @@ var assert = require('assert');
 var ae = require('../src/eval.js');
 
 describe('atom', function() {
-    it('should return -1 when the value is not present', function() {
+    it('atom', function() {
         assert.equal(1, ae.jsEval(1, {}));
         assert.equal('string', ae.jsEval('string', {}));
     });
 });
 
 describe('read', function() {
-    it('should return -1 when the value is not present', function() {
+    it('read', function() {
         assert.equal(true, ae.read('#t'));
         assert.equal(false, ae.read('#f'));
         assert.equal(12345, ae.read('12345'));
@@ -29,7 +29,7 @@ describe('read', function() {
 });
 
 describe('eval', function() {
-    it('should return -1 when the value is not present', function() {
+    it('eval', function() {
         assert.equal(1, ae.parse('(if #t 1 2)'));
         assert.equal(2, ae.parse('(if #f 1 2)'));
         assert.equal(1, ae.parse('(begin 1)'));
@@ -48,7 +48,7 @@ describe('eval', function() {
 });
 
 describe('procedure', function() {
-    it('shuold return the same results as javascript functions', function() {
+    it('procedure', function() {
         assert.equal(3, ae.parse('(+ 1 2)'));
         assert.equal(1, ae.parse('(- 3 2)'));
         assert.equal(15, ae.parse('(* 3 5)'));
