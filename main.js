@@ -48,6 +48,12 @@
 	(function () {
 	    'use strict';
 
+	    function makeClass(){
+	        return function(){
+	            this.constructor.apply(this, arguments);
+	        };
+	    }
+
 	    var symbolTable = {};
 
 	    function fold(f, init) {
@@ -101,19 +107,23 @@
 	        return x.slice(1);
 	    }
 
-	    class Primitive {
-	        constructor(f) {
+	    var Primitive = makeClass();
+	    Primitive.prototype = {
+	        className: "Primitive",
+	        constructor: function(f) {
 	            this.f = f;
 	        }
-	    }
+	    };
 
-	    class Procedure {
-	        constructor(vars, exps, envs) {
+	    var Procedure = makeClass();
+	    Procedure.prototype = {
+	        className: "Procedure",
+	        constructor: function(vars, exps, envs) {
 	            this.vars = vars;
 	            this.exps = exps;
 	            this.envs = envs;
 	        }
-	    }
+	    };
 
 	    function alert(x) {
 	        if (window !== undefined)
@@ -175,12 +185,14 @@
 	        }
 	    }
 
-	    class InPort {
-	        constructor(input) {
+	    var InPort = makeClass();
+	    InPort.prototype = {
+	        className: "InPort",
+	        constructor: function(input) {
 	            this.input = input;
 	            this.tokenizer = /\s*(,@|[('`,)]|"(?:[\\].|[^\\"])*"|;.*|[^\s('"`,;)]*)([\s\S]*)/;
-	        }
-	        next_token() {
+	        },
+	        next_token: function() {
 	            if (this.input === '') {
 	                return Sym('eof');
 	            } else {
@@ -193,13 +205,15 @@
 	                }
 	            }
 	        }
-	    }
+	    };
 
-	    class Symbol {
-	        constructor(str) {
+	    var Symbol = makeClass();
+	    Symbol.prototype = {
+	        className: "Symbol",
+	        constructor: function(str) {
 	            this.name = str;
 	        }
-	    }
+	    };
 
 	    function hasKey(key, json) {
 	        for (var k in json) {
@@ -368,9 +382,9 @@
 	            throw 'error';
 	        }
 	        var klass = proc;
-	        if (klass.constructor === Primitive) {
+	        if (klass.className === "Primitive") {
 	            return klass.f.apply({}, args);
-	        } else if (klass.constructor === Procedure) {
+	        } else if (klass.className === "Procedure") {
 	            var vars = proc.vars;
 	            var env  = proc.envs;
 	            var exps = proc.exps;
