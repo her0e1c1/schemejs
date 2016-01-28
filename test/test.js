@@ -59,3 +59,10 @@ describe('procedure', function() {
         assert.equal('a', ae.parse('(chr 97)'));
     });
 });
+
+describe('hello', function() {
+    it('hello', function() {
+        // assert.equal('', ae.parse('(begin (define msg "You are wellcome!") (define (hello) msg) (hello))'));
+        assert.equal(1, ae.parse('(begin (define msg "You are wellcome!") (define hello (lambda () msg)) (hello)) '));
+    });
+});
