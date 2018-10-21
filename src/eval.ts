@@ -5,6 +5,7 @@ interface List {
 }
 type Atom = true | false | String | Number | Symbol;
 type Value = Atom | List;
+
 type Token = string;
 // type Token = '#t' | '#f' | '(' | ')' | "'";
 type EnvVal = Value | Primitive;
@@ -53,8 +54,11 @@ const cons = (x, y) => {
   }
   return a;
 };
+const isNull = (x): boolean => x instanceof Array && x.length === 0;
+const isPair = (x): boolean => x instanceof Array && x.length !== 0;
 
 const theGrobalEnvironment: Env = {
+  'null?': new Primitive(isNull),
   '+': new Primitive(fold(add2, 0)),
   '-': new Primitive(fold(sub2, 0)),
   '*': new Primitive(fold(mul2, 0)),
@@ -146,10 +150,6 @@ export const Sym = (str: Sym): Symbol => {
   }
   return symbolTable[str];
 };
-
-const isNull = (x): boolean => x instanceof Array && x.length === 0;
-
-const isPair = (x): boolean => x instanceof Array && x.length !== 0;
 
 export const jsEval = (exp: Exp, envs: Env[] = []) => analyze(exp)(envs);
 
@@ -298,7 +298,7 @@ const envAction = (
   nullAction: () => void
 ) => {
   if (envs.length === 0) {
-    throw 'Unbouned variable';
+    throw `Unbouned variable: ${vr.name}`;
   }
   // In each action you can access at least one environment
   for (let i = 0; i < envs.length; i++) {
