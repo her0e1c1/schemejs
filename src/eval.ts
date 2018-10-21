@@ -42,21 +42,11 @@ const cons = (x, y) => {
 };
 
 class Primitive {
-  className = 'Primitive';
-  f(...args: any[]): any;
-  constructor(f) {
-    this.f = f;
-  }
+  constructor(public f: (...args: any[]) => any) {}
 }
 
 class Procedure {
-  className = 'Procedure';
-  envs: Env[];
-  constructor(vars, exps, envs: Env[]) {
-    this.vars = vars;
-    this.exps = exps;
-    this.envs = envs;
-  }
+  constructor(public vars: Var[], public exps: Exp[], public envs: Env[]) {}
 }
 
 const theGrobalEnvironment: Env = {
@@ -172,7 +162,7 @@ const isPair = (x): boolean => {
   return x.constructor === Array && x.length !== 0;
 };
 
-export const jsEval = (exp, envs: Env[] = []) => analyze(exp)(envs);
+export const jsEval = (exp: Exp, envs: Env[] = []) => analyze(exp)(envs);
 
 const analyze = (exp: Exp) => {
   if (isSelfEvaluateing(exp)) {
@@ -311,19 +301,17 @@ function executeApplicatoin(proc, args) {
     throw 'error';
   }
   var klass = proc;
-  if (klass.className === 'Primitive') {
+  if (klass instanceof Primitive) {
     return klass.f.apply({}, args);
-  } else if (klass.className === 'Procedure') {
-    var vars = proc.vars;
-    var env = proc.envs;
-    var exps = proc.exps;
-
-    var e = {};
+  } else if (klass instanceof Procedure) {
+    const vars = proc.vars;
+    const env = proc.envs;
+    const exps = proc.exps;
+    let e = {};
     for (var i = 0; i < vars.length; i++) {
       e[vars[i].name] = args[i];
     }
-    env.unshift(e);
-    // var newEnv = extendEnviroment(vars, args, env);
+    env.unshift(e); // extend env
     return exps(env);
   } else {
     throw 'Unknown procedure type -- EXECUTE-APPLICATION ' + proc;
