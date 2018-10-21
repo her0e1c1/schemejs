@@ -176,14 +176,13 @@ export function Sym(str) {
   return symbolTable[str];
 }
 
-const isNull = (x): boolean =>
-  (x.constructor === Array && x.length === 0) || false;
+const isNull = (x): boolean => x.constructor === Array && x.length === 0;
 
 const isPair = (x): boolean => {
   if (x === undefined || x.name !== undefined) {
     return false;
   }
-  return (x.constructor === Array && x.length !== 0) || false;
+  return x.constructor === Array && x.length !== 0;
 };
 
 export const jsEval = (exp, env) => analyze(exp)(env);
