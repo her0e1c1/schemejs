@@ -180,10 +180,10 @@ const analyze = (exp: Exp): ((envs: Env[]) => any) => {
   throw 'Unknown expression type -- EVAL ' + exp;
 };
 
-const isSelfEvaluateing = (exp): boolean => {
-  const t = typeof exp;
-  return t === 'string' || t === 'number' || t === 'boolean' || false;
-};
+const isSelfEvaluateing = (exp: Exp): boolean =>
+  typeof exp === 'string' ||
+  typeof exp === 'number' ||
+  typeof exp === 'boolean';
 
 const isTrue = x => x !== false;
 
@@ -250,13 +250,11 @@ const analyzeSet = (exp: Exp) => {
   };
 };
 
-function analyzeLambda(exp) {
-  var vars = exp[1];
-  var exps = analyzeSequence(exp.slice(2));
-  return function(envs) {
-    return new Procedure(vars, exps, envs);
-  };
-}
+const analyzeLambda = exp => {
+  const vars = exp[1];
+  const exps = analyzeSequence(exp.slice(2));
+  return (envs: Env[]) => new Procedure(vars, exps, envs);
+};
 
 const executeApplicatoin = (proc, args) => {
   // [['primitive f] args]
