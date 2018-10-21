@@ -69,13 +69,11 @@ describe('procedure', () => {
   });
 });
 
-/*
 describe('hello', () => {
   it('hello', () => {
     // assert.equal('', ae.parse('(begin (define msg "You are wellcome!") (define (hello) msg) (hello))'));
     let stmt =
-      '(begin (define msg "You are wellcome!") (define hello (lambda () msg)) (hello))';
-    expect(parse(stmt)).toBe(1);
+      '(begin (define msg "hello!") (define hello (lambda () msg)) (hello))';
+    expect(parse(stmt)).toBe('hello!');
   });
 });
-*/

@@ -1,4 +1,5 @@
-type Token = '#t' | '#f' | string;
+type Value = null | true | false | Number | String;
+type Token = '#t' | '#f' | '(' | ')' | "'";
 
 const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
   const list = [init];
@@ -15,8 +16,7 @@ const mod2 = (x: number, y: number): number => x % y;
 const car = <T>(xs: T[]): T => xs[0];
 const cdr = <T>(xs: T[]): T[] => xs.slice(1);
 const alert = (x: string) => window !== undefined && window.alert(x);
-
-function cons(x, y) {
+const cons = (x, y) => {
   // TODO: dotted list
   if (y.constructor !== Array) {
     return [x, y];
@@ -27,7 +27,7 @@ function cons(x, y) {
     a.push(y[i]);
   }
   return a;
-}
+};
 
 class Primitive {
   className = 'Primitive';
@@ -82,10 +82,10 @@ const theGrobalEnvironment = [
 export const parse = (input: string) =>
   jsEval(read(input), theGrobalEnvironment);
 
-export const read = (input: string) => {
+export const read = (input: string): Value => {
   const inport = new InPort(input);
 
-  function readAhead(token: string) {
+  function readAhead(token: Token) {
     if (token === '(') {
       const L = [] as string[];
       while (true) {
@@ -177,7 +177,7 @@ function isNull(x) {
 
 function isPair(x) {
   if (x === undefined) {
-    throw 'Unepected undefined object';
+    throw 'Unexpected undefined object';
   } else if (x.name !== undefined) {
     return false;
   }
@@ -186,7 +186,7 @@ function isPair(x) {
 
 export const jsEval = (exp, env) => analyze(exp)(env);
 
-function analyze(exp) {
+const analyze = exp => {
   if (isSelfEvaluateing(exp)) {
     return analyzeSelfEvaluating(exp);
   }
@@ -213,12 +213,12 @@ function analyze(exp) {
     return analyzeApplication(exp);
   }
   throw 'Unknown expression type -- EVAL ' + exp;
-}
+};
 
-function isSelfEvaluateing(exp) {
+const isSelfEvaluateing = (exp): boolean => {
   const t = typeof exp;
   return t === 'string' || t === 'number' || t === 'boolean' || false;
-}
+};
 
 function isTrue(x) {
   return x !== false;
@@ -357,16 +357,16 @@ function lookupVariableValue(vr, envs) {
   return envAction(vr, envs, foundAction, nullAction);
 }
 
-function setVariableValue(vr, vl, envs) {
-  function foundAction(env) {
+const setVariableValue = (vr, vl, envs) => {
+  const foundAction = env => {
     env[vr.name] = vl;
-  }
+  };
 
   function nullAction() {
     setVariableValue(vr, vl, envs.slice(1));
   }
   envAction(vr, envs, foundAction, nullAction);
-}
+};
 
 function defineVariable(vr, vl, envs) {
   function foundAction(env) {
