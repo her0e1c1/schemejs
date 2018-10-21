@@ -65,7 +65,7 @@ describe('procedure', () => {
     expect(parse('(+ 1 2 3 4 5)')).toBe(15);
   });
   it('lambda', () => {
-    // expect(parse('((lambda (x) (+ x 1)) 2)')).toBe(3);
+    expect(parse('((lambda (x) (+ x 1)) 2)')).toBe(3);
   });
 });
 

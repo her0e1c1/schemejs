@@ -1,3 +1,5 @@
+type Token = '#t' | '#f' | string;
+
 const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
   const list = [init];
   for (let i = 0; i < args.length; i++) {
@@ -37,7 +39,7 @@ class Primitive {
 
 class Procedure {
   className = 'Procedure';
-  constructorn(vars, exps, envs) {
+  constructor(vars, exps, envs) {
     this.vars = vars;
     this.exps = exps;
     this.envs = envs;
@@ -77,18 +79,17 @@ const theGrobalEnvironment = [
   },
 ];
 
-export function parse(input) {
-  return jsEval(read(input), theGrobalEnvironment);
-}
+export const parse = (input: string) =>
+  jsEval(read(input), theGrobalEnvironment);
 
-export function read(input) {
-  var inport = new InPort(input);
+export const read = (input: string) => {
+  const inport = new InPort(input);
 
   function readAhead(token: string) {
     if (token === '(') {
-      var L = [] as string[];
+      const L = [] as string[];
       while (true) {
-        var t = inport.next_token();
+        const t = inport.nextToken();
         if (t === ')') {
           return L;
         } else {
@@ -96,17 +97,17 @@ export function read(input) {
         }
       }
     } else if (token === "'") {
-      return [Sym("'"), readAhead(inport.next_token())];
+      return [Sym("'"), readAhead(inport.nextToken())];
     } else if (token === Sym('eof')) {
       throw 'Unexpected EOF';
     } else {
       return atom(token);
     }
   }
-  return readAhead(inport.next_token());
-}
+  return readAhead(inport.nextToken());
+};
 
-function atom(token) {
+const atom = (token: Token) => {
   if (token === '#t') {
     return true;
   } else if (token === '#f') {
@@ -117,7 +118,7 @@ function atom(token) {
     var n = Number(token);
     return isNaN(n) ? Sym(token) : n;
   }
-}
+};
 
 class InPort {
   className = 'InPort';
@@ -125,13 +126,16 @@ class InPort {
   constructor(public input: string) {
     this.input = input;
   }
-  next_token() {
+  nextToken(): Token | undefined {
     if (this.input === '') {
       return Sym('eof');
     } else {
-      var match = this.input.match(this.tokenizer);
-      var m1 = match[1];
-      var m2 = match[2];
+      const match = this.input.match(this.tokenizer);
+      if (!match) {
+        throw `ERROR: ${this.input}`;
+      }
+      const m1 = match[1];
+      const m2 = match[2];
       this.input = m2;
       if (m1 !== '' && m1[0] !== ';') {
         return m1;
@@ -150,14 +154,14 @@ class Symbol {
   }
 }
 
-function hasKey(key, json) {
+const hasKey = (key: string, json): boolean => {
   for (var k in json) {
     if (k === key) {
       return true;
     }
   }
   return false;
-}
+};
 
 export function Sym(str) {
   var s = new Symbol(str);
@@ -180,9 +184,7 @@ function isPair(x) {
   return (x.constructor === Array && x.length !== 0) || false;
 }
 
-export function jsEval(exp, env) {
-  return analyze(exp)(env);
-}
+export const jsEval = (exp, env) => analyze(exp)(env);
 
 function analyze(exp) {
   if (isSelfEvaluateing(exp)) {
