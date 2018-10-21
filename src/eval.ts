@@ -13,6 +13,19 @@ type Exp = Atom | Value | 'var' | Sym;
 type Sym = 'if' | 'begin' | 'define' | 'set!' | 'lambda' | "'" | 'eof';
 type Var = { name: string };
 
+const symbolTable = {};
+
+class Symbol {
+  constructor(public name: string) {}
+}
+class Primitive {
+  constructor(public f: (...args: any[]) => any) {}
+}
+
+class Procedure {
+  constructor(public vars: Var[], public exps: Exp[], public envs: Env[]) {}
+}
+
 const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
   const list = [init];
   for (let i = 0; i < args.length; i++) {
@@ -33,21 +46,12 @@ const cons = (x, y) => {
   if (y.constructor !== Array) {
     return [x, y];
   }
-
-  var a = [x];
-  for (var i = 0; i < y.length; i++) {
+  const a = [x];
+  for (let i = 0; i < y.length; i++) {
     a.push(y[i]);
   }
   return a;
 };
-
-class Primitive {
-  constructor(public f: (...args: any[]) => any) {}
-}
-
-class Procedure {
-  constructor(public vars: Var[], public exps: Exp[], public envs: Env[]) {}
-}
 
 const theGrobalEnvironment: Env = {
   '+': new Primitive(fold(add2, 0)),
@@ -103,7 +107,6 @@ const atom = (token: Token): Atom => {
 };
 
 class InPort {
-  className = 'InPort';
   tokenizer = /\s*(,@|[('`,)]|"(?:[\\].|[^\\"])*"|;.*|[^\s('"`,;)]*)([\s\S]*)/;
   constructor(public input: string) {
     this.input = input;
@@ -126,18 +129,8 @@ class InPort {
   }
 }
 
-const symbolTable = {};
-
-class Symbol {
-  className = 'Symbol';
-  name: string;
-  constructor(str) {
-    this.name = str;
-  }
-}
-
 const hasKey = (key: string, json): boolean => {
-  for (var k in json) {
+  for (let k in json) {
     if (k === key) {
       return true;
     }
@@ -294,21 +287,21 @@ function analyzeLambda(exp) {
   };
 }
 
-function executeApplicatoin(proc, args) {
+const executeApplicatoin = (proc, args) => {
   // [['primitive f] args]
   // [['procedure vars exps env] args]
   if (isNull(proc)) {
     throw 'error';
   }
-  var klass = proc;
+  const klass = proc;
   if (klass instanceof Primitive) {
     return klass.f.apply({}, args);
   } else if (klass instanceof Procedure) {
     const vars = proc.vars;
     const env = proc.envs;
     const exps = proc.exps;
-    let e = {};
-    for (var i = 0; i < vars.length; i++) {
+    const e = {};
+    for (let i = 0; i < vars.length; i++) {
       e[vars[i].name] = args[i];
     }
     env.unshift(e); // extend env
@@ -316,7 +309,7 @@ function executeApplicatoin(proc, args) {
   } else {
     throw 'Unknown procedure type -- EXECUTE-APPLICATION ' + proc;
   }
-}
+};
 
 const lookupVariableValue = (vr: Var, envs: Env[]) =>
   envAction(
