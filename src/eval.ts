@@ -4,7 +4,6 @@ interface List {
 type Value = null | true | false | Number | String | List;
 type Token = '#t' | '#f' | '(' | ')' | "'";
 type Env = { [s: string]: Value };
-type Envs = Env[];
 
 const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
   const list = [init];
@@ -358,7 +357,7 @@ function lookupVariableValue(vr, envs) {
   return envAction(vr, envs, foundAction, nullAction);
 }
 
-const setVariableValue = (vr, vl, envs: Envs) => {
+const setVariableValue = (vr, vl, envs: Env[]) => {
   const foundAction = env => {
     env[vr.name] = vl;
   };
@@ -382,7 +381,7 @@ function defineVariable(vr, vl, envs) {
 
 const envAction = (
   vr,
-  envs: Envs,
+  envs: Env[],
   foundAction: (e: Env) => void,
   nullAction: () => void
 ) => {
