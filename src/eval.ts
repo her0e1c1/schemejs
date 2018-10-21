@@ -198,56 +198,44 @@ const analyzeIf = (exp: Exp) => {
   return (envs: Env[]) => (isTrue(pproc(envs)) ? cproc(envs) : aproc(envs));
 };
 
-function analyzeSequence(exps) {
-  function sequentially(proc1, proc2) {
-    return function(env) {
-      proc1(env);
-      return proc2(env);
-    };
-  }
-  var procs = exps.map(analyze);
+const analyzeSequence = (exps: Exp[]) => {
+  const sequentially = (p1, p2) => (envs: Env[]) => {
+    p1(envs);
+    return p2(envs);
+  };
+  const procs = exps.map(analyze);
   if (isNull(procs)) {
     throw 'Empty sequence -- ANALYZE';
   }
-  var firstProc = procs[0];
-  var restProc = procs.slice(1);
+  let firstProc = procs[0];
+  let restProc = procs.slice(1);
   while (!isNull(restProc)) {
     firstProc = sequentially(firstProc, restProc[0]);
     restProc = restProc.slice(1);
   }
   return firstProc;
-}
+};
 
-function analyzeApplication(exp) {
-  var fproc = analyze(exp[0]);
-  var aprocs = exp.slice(1).map(analyze);
-  return function(env) {
-    return executeApplicatoin(
-      fproc(env),
-      aprocs.map(function(aproc) {
-        return aproc(env);
-      })
-    );
-  };
-}
+const analyzeApplication = (exp: Exp[]) => {
+  const fproc = analyze(exp[0]);
+  const aprocs = exp.slice(1).map(analyze);
+  return (envs: Env[]) =>
+    executeApplicatoin(fproc(envs), aprocs.map(aproc => aproc(envs)));
+};
 
 const analyzeLookupVariableValue = (exp: Exp) => (envs: Env[]) =>
   lookupVariableValue(exp, envs);
 
-function analyzeDefine(exp) {
-  var vrproc = exp[1];
-  var vlproc = analyze(exp[2]);
-  return function(envs) {
-    return defineVariable(vrproc, vlproc(envs), envs);
-  };
-}
+const analyzeDefine = (exp: Exp) => {
+  const vrproc = exp[1];
+  const vlproc = analyze(exp[2]);
+  return (envs: Env[]) => defineVariable(vrproc, vlproc(envs), envs);
+};
 
 const analyzeSet = (exp: Exp) => {
   const vrproc = exp[1];
   const vlproc = analyze(exp[2]);
-  return function(envs) {
-    return setVariableValue(vrproc, vlproc(envs), envs);
-  };
+  return (envs: Env[]) => setVariableValue(vrproc, vlproc(envs), envs);
 };
 
 const analyzeLambda = exp => {
@@ -266,15 +254,14 @@ const executeApplicatoin = (proc, args) => {
   if (klass instanceof Primitive) {
     return klass.f.apply({}, args);
   } else if (klass instanceof Procedure) {
-    const vars = proc.vars;
-    const env = proc.envs;
-    const exps = proc.exps;
+    const vars = klass.vars;
+    const envs = klass.envs;
+    const exps = klass.exps;
     const e = {};
     for (let i = 0; i < vars.length; i++) {
       e[vars[i].name] = args[i];
     }
-    env.unshift(e); // extend env
-    return exps(env);
+    return exps([e, ...envs]);
   } else {
     throw 'Unknown procedure type -- EXECUTE-APPLICATION ' + proc;
   }
