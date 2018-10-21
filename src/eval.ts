@@ -1,5 +1,10 @@
-type Value = null | true | false | Number | String;
+interface List {
+  [index: number]: Value;
+}
+type Value = null | true | false | Number | String | List;
 type Token = '#t' | '#f' | '(' | ')' | "'";
+type Env = { [s: string]: Value };
+type Envs = Env[];
 
 const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
   const list = [init];
@@ -171,18 +176,15 @@ export function Sym(str) {
   return symbolTable[str];
 }
 
-function isNull(x) {
-  return (x.constructor === Array && x.length === 0) || false;
-}
+const isNull = (x): boolean =>
+  (x.constructor === Array && x.length === 0) || false;
 
-function isPair(x) {
-  if (x === undefined) {
-    throw 'Unexpected undefined object';
-  } else if (x.name !== undefined) {
+const isPair = (x): boolean => {
+  if (x === undefined || x.name !== undefined) {
     return false;
   }
   return (x.constructor === Array && x.length !== 0) || false;
-}
+};
 
 export const jsEval = (exp, env) => analyze(exp)(env);
 
@@ -357,7 +359,7 @@ function lookupVariableValue(vr, envs) {
   return envAction(vr, envs, foundAction, nullAction);
 }
 
-const setVariableValue = (vr, vl, envs) => {
+const setVariableValue = (vr, vl, envs: Envs) => {
   const foundAction = env => {
     env[vr.name] = vl;
   };
@@ -379,19 +381,24 @@ function defineVariable(vr, vl, envs) {
   envAction(vr, envs, foundAction, nullAction);
 }
 
-function envAction(vr, envs, foundAction, nullAction) {
+const envAction = (
+  vr,
+  envs: Envs,
+  foundAction: (e: Env) => void,
+  nullAction: () => void
+) => {
   if (envs.length === 0) {
     throw 'Unbouned variable';
   }
   // In each action you can access at least one environment
-  for (var i = 0; i < envs.length; i++) {
-    var e = envs[i];
+  for (let i = 0; i < envs.length; i++) {
+    let e = envs[i];
     if (hasKey(vr.name, e)) {
       return foundAction(e);
     }
   }
   return nullAction();
-}
+};
 
 if (typeof window !== 'undefined') {
   // @ts-ignore
