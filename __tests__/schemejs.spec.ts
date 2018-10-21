@@ -43,13 +43,11 @@ describe('parse', () => {
     expect(parse("(car '())")).toBe(undefined);
     expect(parse("(car '(1))")).toBe(1);
     expect(parse("(car '(1 2))")).toBe(1);
+    expect(parse("(car (cdr (cdr '(1 2 3))))")).toBe(3);
+
     expect(parse('(car (cons 1 2))')).toBe(1);
     expect(parse('(car (cdr (cons 1 2)))')).toBe(2);
-
-    // assert.equal(3, ae.parse("(car (cdr (cdr '(1 2 3))))"));
-    // assert.equal(1, ae.parse("(car (cons 1 2))"));
-    // assert.equal(2, ae.parse("(car (cdr (cons 1 2)))"));
-    // assert.equal(2, ae.parse("(car (cdr (cons 1 (cons 2 3))))"));
+    expect(parse('(car (cdr (cons 1 (cons 2 3))))')).toBe(2);
   });
 });
 
@@ -71,7 +69,6 @@ describe('procedure', () => {
 
 describe('hello', () => {
   it('hello', () => {
-    // assert.equal('', ae.parse('(begin (define msg "You are wellcome!") (define (hello) msg) (hello))'));
     let stmt =
       '(begin (define msg "hello!") (define hello (lambda () msg)) (hello))';
     expect(parse(stmt)).toBe('hello!');
