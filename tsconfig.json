@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "commonjs",
+    "target": "es5",
+    "lib": ["es2017", "es7", "dom"],
+    "types": ["react"],
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "declaration": false,
+    "noResolve": false,
+    "allowJs": false,
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "sourceMap": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noUnusedParameters": false,
+    "outDir": "./dist/"
+  },
+  "include": ["./src/**/*", "node_modules/@types/jest"]
+}
