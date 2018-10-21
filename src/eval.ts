@@ -157,7 +157,7 @@ const isPair = (x): boolean => {
 
 export const jsEval = (exp: Exp, envs: Env[] = []) => analyze(exp)(envs);
 
-const analyze = (exp: Exp) => {
+const analyze = (exp: Exp): ((envs: Env[]) => any) => {
   if (isSelfEvaluateing(exp)) {
     return analyzeSelfEvaluating(exp);
   }
@@ -253,15 +253,8 @@ function analyzeApplication(exp) {
   };
 }
 
-function analyzeLookupVariableValue(exp) {
-  var vrproc = exp;
-  return function(envs) {
-    if (exp.constructor === Array && vrproc[0].constructor === Function) {
-      return;
-    }
-    return lookupVariableValue(vrproc, envs);
-  };
-}
+const analyzeLookupVariableValue = (exp: Exp) => (envs: Env[]) =>
+  lookupVariableValue(exp, envs);
 
 function analyzeDefine(exp) {
   var vrproc = exp[1];
