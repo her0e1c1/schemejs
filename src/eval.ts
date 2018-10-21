@@ -3,9 +3,10 @@
 interface List {
   [index: number]: Value;
 }
-type Atom = null | true | false | Number | String | Symbol;
+type Atom = true | false | String | Number | Symbol;
 type Value = Atom | List;
-type Token = '#t' | '#f' | '(' | ')' | "'";
+type Token = string;
+// type Token = '#t' | '#f' | '(' | ')' | "'";
 type EnvVal = Value | Primitive;
 type Env = { [s: string]: EnvVal };
 type Exp = Atom | Value | 'var' | Sym;
@@ -16,7 +17,7 @@ type Var = { name: string };
 const symbolTable = {};
 
 class Symbol {
-  constructor(public name: string) {}
+  constructor(public name: Sym) {}
 }
 class Primitive {
   constructor(public f: (...args: any[]) => any) {}
@@ -100,17 +101,17 @@ const atom = (token: Token): Atom => {
     return false;
   } else if (token[0] === '"') {
     return token.substr(1, token.length - 2);
+  } else if (token === 'if') {
+    return Sym(token); // keyward
   } else {
-    var n = Number(token);
+    const n = Number(token);
     return isNaN(n) ? Sym(token) : n;
   }
 };
 
 class InPort {
   tokenizer = /\s*(,@|[('`,)]|"(?:[\\].|[^\\"])*"|;.*|[^\s('"`,;)]*)([\s\S]*)/;
-  constructor(public input: string) {
-    this.input = input;
-  }
+  constructor(public input: string) {}
   nextToken(): Token | undefined {
     if (this.input === '') {
       return Sym('eof');
@@ -138,22 +139,17 @@ const hasKey = (key: string, json): boolean => {
   return false;
 };
 
-export const Sym = (str): Symbol => {
-  var s = new Symbol(str);
+export const Sym = (str: Sym): Symbol => {
+  const s = new Symbol(str);
   if (!hasKey(str, symbolTable)) {
     symbolTable[str] = s;
   }
   return symbolTable[str];
 };
 
-const isNull = (x): boolean => x.constructor === Array && x.length === 0;
+const isNull = (x): boolean => x instanceof Array && x.length === 0;
 
-const isPair = (x): boolean => {
-  if (x === undefined || x.name !== undefined) {
-    return false;
-  }
-  return x.constructor === Array && x.length !== 0;
-};
+const isPair = (x): boolean => x instanceof Array && x.length !== 0;
 
 export const jsEval = (exp: Exp, envs: Env[] = []) => analyze(exp)(envs);
 
@@ -164,7 +160,6 @@ const analyze = (exp: Exp): ((envs: Env[]) => any) => {
   if (!isPair(exp)) {
     return analyzeLookupVariableValue(exp);
   }
-  // exp is not an atom but a list
   switch (exp[0]) {
     case Sym('if'):
       return analyzeIf(exp);
@@ -190,35 +185,18 @@ const isSelfEvaluateing = (exp): boolean => {
   return t === 'string' || t === 'number' || t === 'boolean' || false;
 };
 
-function isTrue(x) {
-  return x !== false;
-}
+const isTrue = x => x !== false;
 
-function analyzeSelfEvaluating(exp) {
-  return function(env) {
-    return exp;
-  };
-}
+const analyzeSelfEvaluating = (exp: Exp) => (env: Env) => exp;
 
-function analyzeIf(exp) {
-  var pproc = analyze(exp[1]);
-  var cproc = analyze(exp[2]);
-  var aproc = analyze(exp[3]);
-  return function(env) {
-    if (isTrue(pproc(env))) {
-      return cproc(env);
-    } else {
-      return aproc(env);
-    }
-  };
-}
+const analyzeQuote = (exp: Exp) => (envs: Env[]) => exp[1];
 
-function analyzeQuote(exp) {
-  var e = exp[1];
-  return function(env) {
-    return e;
-  };
-}
+const analyzeIf = (exp: Exp) => {
+  const pproc = analyze(exp[1]);
+  const cproc = analyze(exp[2]);
+  const aproc = analyze(exp[3]);
+  return (envs: Env[]) => (isTrue(pproc(envs)) ? cproc(envs) : aproc(envs));
+};
 
 function analyzeSequence(exps) {
   function sequentially(proc1, proc2) {
@@ -264,13 +242,13 @@ function analyzeDefine(exp) {
   };
 }
 
-function analyzeSet(exp) {
-  var vrproc = exp[1];
-  var vlproc = analyze(exp[2]);
+const analyzeSet = (exp: Exp) => {
+  const vrproc = exp[1];
+  const vlproc = analyze(exp[2]);
   return function(envs) {
     return setVariableValue(vrproc, vlproc(envs), envs);
   };
-}
+};
 
 function analyzeLambda(exp) {
   var vars = exp[1];
