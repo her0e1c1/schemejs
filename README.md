@@ -1,7 +1,5 @@
 
-===================================
- Scheme In JavaScript
-===================================
+# Scheme In JavaScript
 
 I wrote analyzing evaluator in SICP in JavaScript instead of Scheme.
 
