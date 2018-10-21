@@ -1,9 +1,17 @@
+// you can not define this
+// type Value = ... | Value[]
 interface List {
   [index: number]: Value;
 }
-type Value = null | true | false | Number | String | List;
+type Atom = null | true | false | Number | String | Symbol;
+type Value = Atom | List;
 type Token = '#t' | '#f' | '(' | ')' | "'";
-type Env = { [s: string]: Value };
+type EnvVal = Value | Primitive;
+type Env = { [s: string]: EnvVal };
+type Exp = Atom | Value | 'var' | Sym;
+// atom or [Sym('if'), e1, e2, e3];
+type Sym = 'if' | 'begin' | 'define' | 'set!' | 'lambda' | "'" | 'eof';
+type Var = { name: string };
 
 const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
   const list = [init];
@@ -43,35 +51,33 @@ class Primitive {
 
 class Procedure {
   className = 'Procedure';
-  constructor(vars, exps, envs) {
+  envs: Env[];
+  constructor(vars, exps, envs: Env[]) {
     this.vars = vars;
     this.exps = exps;
     this.envs = envs;
   }
 }
 
-const theGrobalEnvironment: Env[] = [
-  {
-    '+': new Primitive(fold(add2, 0)),
-    '-': new Primitive(fold(sub2, 0)),
-    '*': new Primitive(fold(mul2, 0)),
-    '/': new Primitive(fold(div2, 0)),
-    '%': new Primitive(fold(mod2, 0)),
-    cons: new Primitive(cons),
-    car: new Primitive(car),
-    cdr: new Primitive(cdr),
-    chr: new Primitive(String.fromCharCode),
-    alert: new Primitive(alert),
-  },
-];
+const theGrobalEnvironment: Env = {
+  '+': new Primitive(fold(add2, 0)),
+  '-': new Primitive(fold(sub2, 0)),
+  '*': new Primitive(fold(mul2, 0)),
+  '/': new Primitive(fold(div2, 0)),
+  '%': new Primitive(fold(mod2, 0)),
+  cons: new Primitive(cons),
+  car: new Primitive(car),
+  cdr: new Primitive(cdr),
+  chr: new Primitive(String.fromCharCode),
+  alert: new Primitive(alert),
+};
 
 export const parse = (input: string) =>
-  jsEval(read(input), theGrobalEnvironment);
+  jsEval(read(input), [theGrobalEnvironment]);
 
 export const read = (input: string): Value => {
   const inport = new InPort(input);
-
-  function readAhead(token: Token) {
+  const readAhead = (token: Token) => {
     if (token === '(') {
       const L = [] as string[];
       while (true) {
@@ -89,11 +95,11 @@ export const read = (input: string): Value => {
     } else {
       return atom(token);
     }
-  }
+  };
   return readAhead(inport.nextToken());
 };
 
-const atom = (token: Token) => {
+const atom = (token: Token): Atom => {
   if (token === '#t') {
     return true;
   } else if (token === '#f') {
@@ -149,13 +155,13 @@ const hasKey = (key: string, json): boolean => {
   return false;
 };
 
-export function Sym(str) {
+export const Sym = (str): Symbol => {
   var s = new Symbol(str);
   if (!hasKey(str, symbolTable)) {
     symbolTable[str] = s;
   }
   return symbolTable[str];
-}
+};
 
 const isNull = (x): boolean => x.constructor === Array && x.length === 0;
 
@@ -168,7 +174,7 @@ const isPair = (x): boolean => {
 
 export const jsEval = (exp, envs: Env[] = []) => analyze(exp)(envs);
 
-const analyze = exp => {
+const analyze = (exp: Exp) => {
   if (isSelfEvaluateing(exp)) {
     return analyzeSelfEvaluating(exp);
   }
@@ -190,7 +196,6 @@ const analyze = exp => {
     case Sym("'"):
       return analyzeQuote(exp);
   }
-
   if (isPair(exp)) {
     return analyzeApplication(exp);
   }
@@ -325,46 +330,34 @@ function executeApplicatoin(proc, args) {
   }
 }
 
-/*
-  The structure of environment is a list of jsons.
- */
-function lookupVariableValue(vr, envs) {
-  function foundAction(env) {
-    return env[vr.name];
-  }
+const lookupVariableValue = (vr: Var, envs: Env[]) =>
+  envAction(
+    vr,
+    envs,
+    env => env[vr.name],
+    () => lookupVariableValue(vr, envs.slice(1))
+  );
 
-  function nullAction() {
-    lookupVariableValue(vr, envs.slice(1));
-  }
-  return envAction(vr, envs, foundAction, nullAction);
-}
+const setVariableValue = (vr: Var, vl: EnvVal, envs: Env[]) =>
+  envAction(
+    vr,
+    envs,
+    env => (env[vr.name] = vl),
+    () => setVariableValue(vr, vl, envs.slice(1))
+  );
 
-const setVariableValue = (vr, vl, envs: Env[]) => {
-  const foundAction = env => {
-    env[vr.name] = vl;
-  };
-
-  function nullAction() {
-    setVariableValue(vr, vl, envs.slice(1));
-  }
-  envAction(vr, envs, foundAction, nullAction);
-};
-
-function defineVariable(vr, vl, envs) {
-  function foundAction(env) {
-    env[vr.name] = vl;
-  }
-
-  function nullAction() {
-    foundAction(envs[0]);
-  }
-  envAction(vr, envs, foundAction, nullAction);
-}
+const defineVariable = (vr: Var, vl: EnvVal, envs: Env[]) =>
+  envAction(
+    vr,
+    envs,
+    env => (env[vr.name] = vl),
+    () => (envs[0][vr.name] = vl)
+  );
 
 const envAction = (
-  vr,
+  vr: Var,
   envs: Env[],
-  foundAction: (e: Env) => void,
+  foundAction: (e: Env) => EnvVal | undefined,
   nullAction: () => void
 ) => {
   if (envs.length === 0) {

@@ -34,7 +34,7 @@ describe('parse', () => {
     expect(parse('(begin 1 2)')).toBe(2);
   });
   it('define', () => {
-    expect(parse('(define a 1)')).toBe(undefined);
+    expect(parse('(define a 1)')).toBe(1);
     expect(parse('(begin (define a 1) a)')).toBe(1);
     expect(parse('(begin (define a 1) (set! a 2) a)')).toBe(2);
   });
