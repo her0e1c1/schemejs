@@ -1,32 +1,18 @@
-const symbolTable = {};
-
-function fold(f, init) {
-  return function() {
-    var list = [init];
-    for (var i = 0; i < arguments.length; i++) {
-      list[i] = arguments[i];
-    }
-    return list.reduce(f);
-  };
-}
-
-const add2 = (x, y) => x + y;
-
-function sub2(x, y) {
-  return x - y;
-}
-
-function mul2(x, y) {
-  return x * y;
-}
-
-function div2(x, y) {
-  return x / y;
-}
-
-function mod2(x, y) {
-  return x % y;
-}
+const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
+  const list = [init];
+  for (let i = 0; i < args.length; i++) {
+    list[i] = args[i];
+  }
+  return list.reduce(f);
+};
+const add2 = (x: number, y: number): number => x + y;
+const sub2 = (x: number, y: number): number => x - y;
+const mul2 = (x: number, y: number): number => x * y;
+const div2 = (x: number, y: number): number => x / y;
+const mod2 = (x: number, y: number): number => x % y;
+const car = <T>(xs: T[]): T => xs[0];
+const cdr = <T>(xs: T[]): T[] => xs.slice(1);
+const alert = (x: string) => window !== undefined && window.alert(x);
 
 function cons(x, y) {
   // TODO: dotted list
@@ -39,14 +25,6 @@ function cons(x, y) {
     a.push(y[i]);
   }
   return a;
-}
-
-function car(x) {
-  return x[0];
-}
-
-function cdr(x) {
-  return x.slice(1);
 }
 
 class Primitive {
@@ -66,11 +44,7 @@ class Procedure {
   }
 }
 
-function alert(x) {
-  if (window !== undefined) window.alert(x);
-}
-
-var theGrobalEnvironment = [
+const theGrobalEnvironment = [
   {
     '+': new Primitive(fold(add2, 0)),
   },
@@ -165,6 +139,8 @@ class InPort {
     }
   }
 }
+
+const symbolTable = {};
 
 class Symbol {
   className = 'Symbol';
