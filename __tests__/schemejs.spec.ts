@@ -2,8 +2,8 @@ import { jsEval, read, parse, Sym } from '../src/eval';
 
 describe('atom', () => {
   test('atom', () => {
-    expect(1).toBe(jsEval(1, {}));
-    expect('string').toBe(jsEval('string', {}));
+    expect(1).toBe(jsEval(1));
+    expect('string').toBe(jsEval('string'));
   });
 });
 

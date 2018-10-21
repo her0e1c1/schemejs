@@ -50,35 +50,17 @@ class Procedure {
   }
 }
 
-const theGrobalEnvironment = [
+const theGrobalEnvironment: Env[] = [
   {
     '+': new Primitive(fold(add2, 0)),
-  },
-  {
     '-': new Primitive(fold(sub2, 0)),
-  },
-  {
     '*': new Primitive(fold(mul2, 0)),
-  },
-  {
     '/': new Primitive(fold(div2, 0)),
-  },
-  {
     '%': new Primitive(fold(mod2, 0)),
-  },
-  {
     cons: new Primitive(cons),
-  },
-  {
     car: new Primitive(car),
-  },
-  {
     cdr: new Primitive(cdr),
-  },
-  {
     chr: new Primitive(String.fromCharCode),
-  },
-  {
     alert: new Primitive(alert),
   },
 ];
@@ -184,7 +166,7 @@ const isPair = (x): boolean => {
   return x.constructor === Array && x.length !== 0;
 };
 
-export const jsEval = (exp, env) => analyze(exp)(env);
+export const jsEval = (exp, envs: Env[] = []) => analyze(exp)(envs);
 
 const analyze = exp => {
   if (isSelfEvaluateing(exp)) {
