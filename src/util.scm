@@ -28,4 +28,24 @@
             tails
             (cons head tails)))))
 
+(define (remove a alist)
+  (if (null? alist)
+      '()
+      (let ((head (car alist))
+            (tails (remove a (cdr alist))))
+        (if (eq? a head)
+            tails
+            (cons head tails)))))
+
+(define (append a1 a2)
+  (if (null? a1) a2
+      (cons (car a1) (append (cdr a1) a2))))
+
+(define (list a)
+  (cons a '()))
+
+(define (reverse alist)
+  (if (null? alist) '()
+      (append (reverse (cdr alist)) (list (car alist)))))
+
 )

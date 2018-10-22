@@ -125,11 +125,25 @@ describe('func', () => {
   });
   it('unique', () => {
     expect(parse("(unique '(1 2 3 1 2 3))")).toEqual([1, 2, 3]);
-    expect(parse("(unique '(1 2 3 1 2))")).toEqual([3, 1, 2]);
-    expect(parse("(unique '(1 2 3 1))")).toEqual([2, 3, 1]);
+    expect(parse("(unique '(1 2 3 1 2))")).toEqual([3, 1, 2]); // need to reorder
+    expect(parse("(unique '(1 2 3 1))")).toEqual([2, 3, 1]); // ditto
     expect(parse("(unique '(1 2 3))")).toEqual([1, 2, 3]);
     expect(parse("(unique '(1 2))")).toEqual([1, 2]);
     expect(parse("(unique '(1))")).toEqual([1]);
     expect(parse("(unique '())")).toEqual([]);
+  });
+  it('remove', () => {
+    expect(parse("(remove 4 '(1 2 3))")).toEqual([1, 2, 3]);
+    expect(parse("(remove 1 '(1 2 3))")).toEqual([2, 3]);
+    expect(parse("(remove 1 '(1 2))")).toEqual([2]);
+    expect(parse("(remove 1 '(1))")).toEqual([]);
+    expect(parse("(remove 1 '())")).toEqual([]);
+    expect(parse("(remove 1 '(1 2 3 1))")).toEqual([2, 3]);
+  });
+  it('reverse', () => {
+    expect(parse("(reverse '())")).toEqual([]);
+    expect(parse("(reverse '(1))")).toEqual([1]);
+    expect(parse("(reverse '(1 2))")).toEqual([2, 1]);
+    expect(parse("(reverse '(1 2 3))")).toEqual([3, 2, 1]);
   });
 });
