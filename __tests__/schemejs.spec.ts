@@ -43,7 +43,14 @@ describe('parse', () => {
     expect(parse('(begin (define a 1) (set! a 2) a)')).toBe(2);
   });
   it('define lambda', () => {
+    expect(parse('(begin (define (add) (+ 1)) (add))')).toBe(1);
     expect(parse('(begin (define (add x) (+ x 1)) (add 2))')).toBe(3);
+    expect(parse('(begin (define (add x y z) (+ x y z)) (add 1 2 3))')).toBe(6);
+  });
+  it('let', () => {
+    // expect(parse('(let 1)')).toBe();
+    expect(parse('(let (a 1) (+ a 2))')).toBe(3);
+    expect(parse('(let (a 1) (b 2) (c 3) (+ a b c))')).toBe(6);
   });
   it('car/cdr', () => {
     expect(parse("'(1 2 3)")).toEqual([1, 2, 3]);

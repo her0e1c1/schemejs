@@ -171,6 +171,8 @@ const analyze = (exp: Exp): ((envs: Env[]) => any) => {
       return analyzeSet(exp);
     case Sym('lambda'):
       return analyzeLambda(exp);
+    case Sym('let'):
+      return analyzeLet(exp);
     case Sym("'"):
       return analyzeQuote(exp);
   }
@@ -251,6 +253,21 @@ const analyzeDefine = (exp: Exp) => {
     const vlproc = analyze(exp[2]);
     return (envs: Env[]) => defineVariable(vrproc, vlproc(envs), envs);
   }
+};
+
+const analyzeLet = (exp: Exp) => {
+  // (let (v1 e1) (v2 e2) ... exp) => ((lambda (v1 v2 ...) exp) e1 e2 ...)
+  const vars = [];
+  const args = [];
+  for (let e of exp.slice(1, -1)) {
+    if (!isPair(e)) {
+      throw `Not pair: ${e}`;
+    }
+    vars.push(e[0]);
+    args.push(e[1]);
+  }
+  const last = exp[exp.length - 1];
+  return analyze([[Sym('lambda'), vars, last], ...args]);
 };
 
 const executeApplicatoin = (proc, args) => {
