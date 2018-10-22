@@ -35,6 +35,8 @@ const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
   }
   return list.reduce(f);
 };
+const foldr = (f, init, xs) =>
+  xs.length === 0 ? init : f(xs[0], foldr(f, init, xs.slice(1)));
 const add2 = (x: number, y: number): number => x + y;
 const sub2 = (x: number, y: number): number => x - y;
 const mul2 = (x: number, y: number): number => x * y;
@@ -69,6 +71,7 @@ const theGrobalEnvironment: Env = {
   cdr: new Primitive(cdr),
   chr: new Primitive(String.fromCharCode),
   alert: new Primitive(alert),
+  foldr: new Primitive(foldr),
 };
 
 export const parse = (input: string) =>
@@ -171,6 +174,8 @@ const analyze = (exp: Exp): ((envs: Env[]) => any) => {
       return analyzeSet(exp);
     case Sym('lambda'):
       return analyzeLambda(exp);
+    case Sym('cond'):
+      return analyzeCond(exp);
     case Sym('let'):
       return analyzeLet(exp);
     case Sym("'"):
@@ -199,6 +204,23 @@ const analyzeIf = (exp: Exp) => {
   const aproc = analyze(exp[3]);
   return (envs: Env[]) => (isTrue(pproc(envs)) ? cproc(envs) : aproc(envs));
 };
+
+// (cond (p1 es1) (p2 es2) ... (else es)) =>
+// (if p1 es1 (if p2 es2 (if ... es)))
+const analyzeCond = (exp: Exp) =>
+  analyze(
+    foldr(
+      (x, acc) => {
+        let p = x[0];
+        if (p === Sym('else')) {
+          p = '#t';
+        }
+        return [Sym('if'), p, x[1], acc];
+      },
+      [],
+      exp.slice(1)
+    )
+  );
 
 const analyzeSequence = (exps: Exp[]) => {
   const sequentially = (p1, p2) => (envs: Env[]) => {
@@ -256,7 +278,7 @@ const analyzeDefine = (exp: Exp) => {
 };
 
 const analyzeLet = (exp: Exp) => {
-  // (let (v1 e1) (v2 e2) ... exp) => ((lambda (v1 v2 ...) exp) e1 e2 ...)
+  // (let ((v1 e1) (v2 e2) ...) exps) => ((lambda (v1 v2 ...) exps) e1 e2 ...)
   const vars = [];
   const args = [];
   for (let e of exp.slice(1, -1)) {

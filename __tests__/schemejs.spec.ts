@@ -91,14 +91,12 @@ describe('hello', () => {
 
 describe('func', () => {
   parse(code);
-  /* TODO: implement cond
   it('last', () => {
-    expect(parse("(last '())")).toBe([]);
+    expect(parse("(last '())")).toEqual([]);
     expect(parse("(last '(1))")).toBe(1);
     expect(parse("(last '(1 2))")).toBe(2);
     expect(parse("(last '(1 2 3))")).toBe(3);
   });
-  */
   it('length', () => {
     expect(parse("(length '())")).toBe(0);
     expect(parse("(length '(1))")).toBe(1);
