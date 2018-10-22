@@ -5,7 +5,7 @@
   "version": "2.0.0",
   "description": "Analyzing Evaluator In Javascript",
   "scripts": {
-    "test": "jest"
+    "test": "yarn run jest --verbose"
   },
   "keywords": [
     "sicp"
