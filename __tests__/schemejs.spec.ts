@@ -90,4 +90,10 @@ describe('func', () => {
     expect(parse("(length '(1 2))")).toBe(2);
     expect(parse("(length '(1 2 3))")).toBe(3);
   });
+  it('map', () => {
+    expect(parse("(map (lambda (x) (* x x)) '())")).toEqual([]);
+    expect(parse("(map (lambda (x) (* x x)) '(1))")).toEqual([1]);
+    expect(parse("(map (lambda (x) (* x x)) '(1 2))")).toEqual([1, 4]);
+    expect(parse("(map (lambda (x) (* x x)) '(1 2 3))")).toEqual([1, 4, 9]);
+  });
 });
