@@ -1,5 +1,9 @@
 import { jsEval, read, parse, Sym } from '../src/eval';
 
+const fs = require("fs")
+const path = require("path")
+const code = fs.readFileSync(path.join(__dirname, "../src/util.scm"), "utf8")
+
 describe('atom', () => {
   test('atom', () => {
     expect(1).toBe(jsEval(1));
@@ -79,13 +83,8 @@ describe('hello', () => {
 });
 
 describe('func', () => {
+  parse(code);
   it('length', () => {
-    parse(`
-(define (length a)
-  (if (null? a)
-      0
-      (+ 1 (length (cdr a)))))
-`);
     expect(parse("(length '())")).toBe(0);
     expect(parse("(length '(1))")).toBe(1);
     expect(parse("(length '(1 2))")).toBe(2);
