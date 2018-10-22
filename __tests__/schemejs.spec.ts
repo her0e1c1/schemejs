@@ -84,6 +84,14 @@ describe('hello', () => {
 
 describe('func', () => {
   parse(code);
+  /* TODO: implement cond
+  it('last', () => {
+    expect(parse("(last '())")).toBe([]);
+    expect(parse("(last '(1))")).toBe(1);
+    expect(parse("(last '(1 2))")).toBe(2);
+    expect(parse("(last '(1 2 3))")).toBe(3);
+  });
+  */
   it('length', () => {
     expect(parse("(length '())")).toBe(0);
     expect(parse("(length '(1))")).toBe(1);
@@ -96,4 +104,15 @@ describe('func', () => {
     expect(parse("(map (lambda (x) (* x x)) '(1 2))")).toEqual([1, 4]);
     expect(parse("(map (lambda (x) (* x x)) '(1 2 3))")).toEqual([1, 4, 9]);
   });
+  /* TODO: let
+  it('unique', () => {
+    expect(parse("(unique '(1 2 3 1 2 3))")).toEqual([1, 2, 3]);
+    expect(parse("(unique '(1 2 3 1 2))")).toEqual([1, 2, 3]);
+    expect(parse("(unique '(1 2 3 1))")).toEqual([1, 2, 3]);
+    expect(parse("(unique '(1 2 3))")).toEqual([1, 2, 3]);
+    expect(parse("(unique '(1 2))")).toEqual([1, 2]);
+    expect(parse("(unique '(1))")).toEqual([1]);
+    expect(parse("(unique '())")).toEqual([]);
+  });
+  */
 });
