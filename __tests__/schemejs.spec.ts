@@ -38,6 +38,9 @@ describe('parse', () => {
     expect(parse('(begin (define a 1) a)')).toBe(1);
     expect(parse('(begin (define a 1) (set! a 2) a)')).toBe(2);
   });
+  it('define lambda', () => {
+    expect(parse('(begin (define (add x) (+ x 1)) (add 2))')).toBe(3);
+  });
   it('car/cdr', () => {
     expect(parse("'(1 2 3)")).toEqual([1, 2, 3]);
     expect(parse("(car '())")).toBe(undefined);
@@ -78,10 +81,10 @@ describe('hello', () => {
 describe('func', () => {
   it('length', () => {
     parse(`
-(define length (lambda (a)
+(define (length a)
   (if (null? a)
       0
-      (+ 1 (length (cdr a))))))
+      (+ 1 (length (cdr a)))))
 `);
     expect(parse("(length '())")).toBe(0);
     expect(parse("(length '(1))")).toBe(1);

@@ -226,22 +226,31 @@ const analyzeApplication = (exp: Exp[]) => {
 const analyzeLookupVariableValue = (exp: Exp) => (envs: Env[]) =>
   lookupVariableValue(exp, envs);
 
-const analyzeDefine = (exp: Exp) => {
-  const vrproc = exp[1];
-  const vlproc = analyze(exp[2]);
-  return (envs: Env[]) => defineVariable(vrproc, vlproc(envs), envs);
-};
-
 const analyzeSet = (exp: Exp) => {
   const vrproc = exp[1];
   const vlproc = analyze(exp[2]);
   return (envs: Env[]) => setVariableValue(vrproc, vlproc(envs), envs);
 };
 
-const analyzeLambda = exp => {
+const analyzeLambda = (exp: Exp) => {
   const vars = exp[1];
   const exps = analyzeSequence(exp.slice(2));
   return (envs: Env[]) => new Procedure(vars, exps, envs);
+};
+
+const analyzeDefine = (exp: Exp) => {
+  if (isPair(exp[1])) {
+    // (define (sym args) exps) => (define sym (lambda (args) exps))
+    // exp[1].length === 0
+    const sym = exp[1][0];
+    const vars = exp[1].slice(1);
+    const exps = exp.slice(2);
+    return analyze([Sym('define'), sym, [Sym('lambda'), vars, ...exps]]);
+  } else {
+    const vrproc = exp[1];
+    const vlproc = analyze(exp[2]);
+    return (envs: Env[]) => defineVariable(vrproc, vlproc(envs), envs);
+  }
 };
 
 const executeApplicatoin = (proc, args) => {
