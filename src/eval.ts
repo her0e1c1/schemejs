@@ -56,10 +56,13 @@ const cons = (x, y) => {
   }
   return a;
 };
+
+const isEqual = (x, y): boolean => x === y;
 const isNull = (x): boolean => x instanceof Array && x.length === 0;
 const isPair = (x): boolean => x instanceof Array && x.length !== 0;
 
 const theGrobalEnvironment: Env = {
+  'eq?': new Primitive(isEqual),
   'null?': new Primitive(isNull),
   '+': new Primitive(fold(add2, 0)),
   '-': new Primitive(fold(sub2, 0)),
@@ -281,15 +284,19 @@ const analyzeLet = (exp: Exp) => {
   // (let ((v1 e1) (v2 e2) ...) exps) => ((lambda (v1 v2 ...) exps) e1 e2 ...)
   const vars = [];
   const args = [];
-  for (let e of exp.slice(1, -1)) {
+
+  if (!isPair(exp[1])) {
+    throw `Invalid Syntax Let`;
+  }
+
+  for (let e of exp[1]) {
     if (!isPair(e)) {
       throw `Not pair: ${e}`;
     }
     vars.push(e[0]);
     args.push(e[1]);
   }
-  const last = exp[exp.length - 1];
-  return analyze([[Sym('lambda'), vars, last], ...args]);
+  return analyze([[Sym('lambda'), vars, ...exp.slice(2)], ...args]);
 };
 
 const executeApplicatoin = (proc, args) => {

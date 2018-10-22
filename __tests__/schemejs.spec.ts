@@ -1,8 +1,8 @@
 import { jsEval, read, parse, Sym } from '../src/eval';
 
-const fs = require("fs")
-const path = require("path")
-const code = fs.readFileSync(path.join(__dirname, "../src/util.scm"), "utf8")
+const fs = require('fs');
+const path = require('path');
+const code = fs.readFileSync(path.join(__dirname, '../src/util.scm'), 'utf8');
 
 describe('atom', () => {
   test('atom', () => {
@@ -49,8 +49,8 @@ describe('parse', () => {
   });
   it('let', () => {
     // expect(parse('(let 1)')).toBe();
-    expect(parse('(let (a 1) (+ a 2))')).toBe(3);
-    expect(parse('(let (a 1) (b 2) (c 3) (+ a b c))')).toBe(6);
+    expect(parse('(let ((a 1)) (+ a 2))')).toBe(3);
+    expect(parse('(let ((a 1) (b 2) (c 3)) (+ a b c))')).toBe(6);
   });
   it('car/cdr', () => {
     expect(parse("'(1 2 3)")).toEqual([1, 2, 3]);
@@ -89,19 +89,33 @@ describe('hello', () => {
   });
 });
 
+describe('primitive', () => {
+  it('eq?', () => {
+    expect(parse('(eq? 1 1)')).toBeTruthy();
+    expect(parse('(eq? "abc" "abc")')).toBeTruthy();
+  });
+});
+
 describe('func', () => {
   parse(code);
+  it('length', () => {
+    expect(parse("(length '())")).toBe(0);
+    expect(parse("(length '(1))")).toBe(1);
+    expect(parse("(length '(1 2))")).toBe(2);
+    expect(parse("(length '(1 2 3))")).toBe(3);
+  });
   it('last', () => {
     expect(parse("(last '())")).toEqual([]);
     expect(parse("(last '(1))")).toBe(1);
     expect(parse("(last '(1 2))")).toBe(2);
     expect(parse("(last '(1 2 3))")).toBe(3);
   });
-  it('length', () => {
-    expect(parse("(length '())")).toBe(0);
-    expect(parse("(length '(1))")).toBe(1);
-    expect(parse("(length '(1 2))")).toBe(2);
-    expect(parse("(length '(1 2 3))")).toBe(3);
+  it('elem?', () => {
+    expect(parse("(elem? 1 '())")).toBeFalsy();
+    expect(parse("(elem? 1 '(1 2 3))")).toBeTruthy();
+    expect(parse("(elem? 2 '(1 2 3))")).toBeTruthy();
+    expect(parse("(elem? 3 '(1 2 3))")).toBeTruthy();
+    expect(parse("(elem? 4 '(1 2 3))")).toBeFalsy();
   });
   it('map', () => {
     expect(parse("(map (lambda (x) (* x x)) '())")).toEqual([]);
@@ -109,15 +123,13 @@ describe('func', () => {
     expect(parse("(map (lambda (x) (* x x)) '(1 2))")).toEqual([1, 4]);
     expect(parse("(map (lambda (x) (* x x)) '(1 2 3))")).toEqual([1, 4, 9]);
   });
-  /* TODO: let
   it('unique', () => {
     expect(parse("(unique '(1 2 3 1 2 3))")).toEqual([1, 2, 3]);
-    expect(parse("(unique '(1 2 3 1 2))")).toEqual([1, 2, 3]);
-    expect(parse("(unique '(1 2 3 1))")).toEqual([1, 2, 3]);
+    expect(parse("(unique '(1 2 3 1 2))")).toEqual([3, 1, 2]);
+    expect(parse("(unique '(1 2 3 1))")).toEqual([2, 3, 1]);
     expect(parse("(unique '(1 2 3))")).toEqual([1, 2, 3]);
     expect(parse("(unique '(1 2))")).toEqual([1, 2]);
     expect(parse("(unique '(1))")).toEqual([1]);
     expect(parse("(unique '())")).toEqual([]);
   });
-  */
 });

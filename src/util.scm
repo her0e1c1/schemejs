@@ -1,14 +1,19 @@
 (begin
 
+(define (length a)
+  (if (null? a)
+      0
+      (+ 1 (length (cdr a)))))
+
 (define (last l)
   (cond ((null? l) '())
         ((null? (cdr l)) (car l))
         (else (last (cdr l)))))
 
-(define (length a)
-  (if (null? a)
-      0
-      (+ 1 (length (cdr a)))))
+(define (elem? i items)
+  (cond ((null? items) #f)
+        ((eq? i (car items)) #t)
+        (else (elem? i (cdr items)))))
 
 (define (map f ls)
   (if (null? ls)
