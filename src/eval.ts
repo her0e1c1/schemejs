@@ -10,15 +10,14 @@ type Token = string;
 // type Token = '#t' | '#f' | '(' | ')' | "'";
 type EnvVal = Value | Primitive;
 type Env = { [s: string]: EnvVal };
-type Exp = Atom | Value | 'var' | Sym;
+type Exp = Value;
 // atom or [Sym('if'), e1, e2, e3];
-type Sym = 'if' | 'begin' | 'define' | 'set!' | 'lambda' | "'" | 'eof';
 type Var = { name: string };
 
 const symbolTable = {};
 
 class Symbol {
-  constructor(public name: Sym) {}
+  constructor(public name: string) {}
 }
 class Primitive {
   constructor(public f: (...args: any[]) => any) {}
@@ -149,7 +148,7 @@ const hasKey = (key: string, json): boolean => {
   return false;
 };
 
-export const Sym = (str: Sym): Symbol => {
+export const Sym = (str: string): Symbol => {
   const s = new Symbol(str);
   if (!hasKey(str, symbolTable)) {
     symbolTable[str] = s;
@@ -197,7 +196,7 @@ const isSelfEvaluateing = (exp: Exp): boolean =>
 
 const isTrue = x => x !== false;
 
-const analyzeSelfEvaluating = (exp: Exp) => (env: Env) => exp;
+const analyzeSelfEvaluating = (exp: Exp) => (envs: Env[]) => exp;
 
 const analyzeQuote = (exp: Exp) => (envs: Env[]) => exp[1];
 
