@@ -14,11 +14,6 @@ type Exp = Value;
 // atom or [Sym('if'), e1, e2, e3];
 type Var = { name: string };
 
-const symbolTable = {};
-
-class Symbol {
-  constructor(public name: string) {}
-}
 class Primitive {
   constructor(public f: (...args: any[]) => any) {}
 }
@@ -60,21 +55,24 @@ const isEqual = (x, y): boolean => x === y;
 const isNull = (x): boolean => x instanceof Array && x.length === 0;
 const isPair = (x): boolean => x instanceof Array && x.length !== 0;
 
-const theGrobalEnvironment: Env = {
-  'eq?': new Primitive(isEqual),
-  'null?': new Primitive(isNull),
-  '+': new Primitive(fold(add2, 0)),
-  '-': new Primitive(fold(sub2, 0)),
-  '*': new Primitive(fold(mul2, 0)),
-  '/': new Primitive(fold(div2, 0)),
-  '%': new Primitive(fold(mod2, 0)),
-  cons: new Primitive(cons),
-  car: new Primitive(car),
-  cdr: new Primitive(cdr),
-  chr: new Primitive(String.fromCharCode),
-  alert: new Primitive(alert),
-  foldr: new Primitive(foldr),
-};
+const theGrobalEnvironment: Env = Object.entries({
+  'eq?': isEqual,
+  'null?': isNull,
+  'pair?': isPair,
+  '+': fold(add2, 0),
+  '-': fold(sub2, 0),
+  '*': fold(mul2, 0),
+  '/': fold(div2, 0),
+  '%': fold(mod2, 0),
+  cons,
+  car,
+  cdr,
+  alert,
+  foldr,
+  chr: String.fromCharCode,
+})
+  .map(([k, v]) => ({ [Symbol.for(k)]: new Primitive(v) }))
+  .reduce(Object.assign, {});
 
 export const parse = (input: string) =>
   jsEval(read(input), [theGrobalEnvironment]);
@@ -139,22 +137,7 @@ class InPort {
   }
 }
 
-const hasKey = (key: string, json): boolean => {
-  for (let k in json) {
-    if (k === key) {
-      return true;
-    }
-  }
-  return false;
-};
-
-export const Sym = (str: string): Symbol => {
-  const s = new Symbol(str);
-  if (!hasKey(str, symbolTable)) {
-    symbolTable[str] = s;
-  }
-  return symbolTable[str];
-};
+export const Sym = (str: string): Symbol => Symbol.for(str);
 
 export const jsEval = (exp: Exp, envs: Env[] = []) => analyze(exp)(envs);
 
@@ -313,7 +296,7 @@ const executeApplicatoin = (proc, args) => {
     const exps = klass.exps;
     const e = {};
     for (let i = 0; i < vars.length; i++) {
-      e[vars[i].name] = args[i];
+      e[vars[i]] = args[i];
     }
     return exps([e, ...envs]);
   } else {
@@ -325,7 +308,7 @@ const lookupVariableValue = (vr: Var, envs: Env[]) =>
   envAction(
     vr,
     envs,
-    env => env[vr.name],
+    env => env[vr],
     () => lookupVariableValue(vr, envs.slice(1))
   );
 
@@ -333,17 +316,12 @@ const setVariableValue = (vr: Var, vl: EnvVal, envs: Env[]) =>
   envAction(
     vr,
     envs,
-    env => (env[vr.name] = vl),
+    env => (env[vr] = vl),
     () => setVariableValue(vr, vl, envs.slice(1))
   );
 
 const defineVariable = (vr: Var, vl: EnvVal, envs: Env[]) =>
-  envAction(
-    vr,
-    envs,
-    env => (env[vr.name] = vl),
-    () => (envs[0][vr.name] = vl)
-  );
+  envAction(vr, envs, env => (env[vr] = vl), () => (envs[0][vr] = vl));
 
 const envAction = (
   vr: Var,
@@ -352,12 +330,12 @@ const envAction = (
   nullAction: () => void
 ) => {
   if (envs.length === 0) {
-    throw `Unbouned variable: ${vr.name}`;
+    throw `Unbouned variable: ${vr.toString()}, ${envs}`;
   }
   // In each action you can access at least one environment
   for (let i = 0; i < envs.length; i++) {
     let e = envs[i];
-    if (hasKey(vr.name, e)) {
+    if (vr in e) {
       return foundAction(e);
     }
   }
