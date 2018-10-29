@@ -143,10 +143,10 @@ export const Sym = (str: string): Symbol => Symbol.for(str);
 export const jsEval = (exp: Value, envs: Env[] = []) => analyze(exp)(envs);
 
 const analyze = (exp: Value): ((envs: Env[]) => any) => {
-  if (isSelfEvaluateing(exp)) {
-    return analyzeSelfEvaluating(exp);
-  }
   if (!isPair(exp)) {
+    if (isSelfEvaluateing(exp)) {
+      return analyzeSelfEvaluating(exp);
+    }
     return analyzeLookupVariableValue(exp);
   }
   switch (exp[0]) {
