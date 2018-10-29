@@ -166,11 +166,9 @@ const analyze = (exp: Value): ((envs: Env[]) => any) => {
       return analyzeLet(exp);
     case Sym("'"):
       return analyzeQuote(exp);
+    default:
+      return analyzeApplication(exp);
   }
-  if (isPair(exp)) {
-    return analyzeApplication(exp);
-  }
-  throw 'Unknown expression type -- EVAL ' + exp;
 };
 
 const isSelfEvaluateing = (exp: Value): boolean =>
