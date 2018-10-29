@@ -1,6 +1,6 @@
 // you can not define this
 // type Value = ... | Value[]
-interface List {
+interface List extends Array<Value> {
   [index: number]: Value;
 }
 type Atom = true | false | String | Number | Symbol;
@@ -10,7 +10,6 @@ type Token = string;
 // type Token = '#t' | '#f' | '(' | ')' | "'";
 type EnvVal = Value | Primitive;
 type Env = { [s: string]: EnvVal };
-type Exp = Value;
 // atom or [Sym('if'), e1, e2, e3];
 type Var = { name: string };
 
@@ -19,7 +18,7 @@ class Primitive {
 }
 
 class Procedure {
-  constructor(public vars: Var[], public exps: Exp[], public envs: Env[]) {}
+  constructor(public vars: Var[], public exps: Value[], public envs: Env[]) {}
 }
 
 const fold = <T>(f: (acc: T, x: T) => T, init: T) => (...args: T[]) => {
@@ -59,7 +58,7 @@ const theGrobalEnvironment: Env = Object.entries({
   'eq?': isEqual,
   'null?': isNull,
   'pair?': isPair,
-  'list': (...xs:any[])=>[...xs],
+  list: (...xs: any[]) => [...xs],
   '+': fold(add2, 0),
   '-': fold(sub2, 0),
   '*': fold(mul2, 0),
@@ -140,9 +139,9 @@ class InPort {
 
 export const Sym = (str: string): Symbol => Symbol.for(str);
 
-export const jsEval = (exp: Exp, envs: Env[] = []) => analyze(exp)(envs);
+export const jsEval = (exp: Value, envs: Env[] = []) => analyze(exp)(envs);
 
-const analyze = (exp: Exp): ((envs: Env[]) => any) => {
+const analyze = (exp: Value): ((envs: Env[]) => any) => {
   if (isSelfEvaluateing(exp)) {
     return analyzeSelfEvaluating(exp);
   }
@@ -173,18 +172,18 @@ const analyze = (exp: Exp): ((envs: Env[]) => any) => {
   throw 'Unknown expression type -- EVAL ' + exp;
 };
 
-const isSelfEvaluateing = (exp: Exp): boolean =>
+const isSelfEvaluateing = (exp: Value): boolean =>
   typeof exp === 'string' ||
   typeof exp === 'number' ||
   typeof exp === 'boolean';
 
 const isTrue = x => x !== false;
 
-const analyzeSelfEvaluating = (exp: Exp) => (envs: Env[]) => exp;
+const analyzeSelfEvaluating = (exp: Value) => (envs: Env[]) => exp;
 
-const analyzeQuote = (exp: Exp) => (envs: Env[]) => exp[1];
+const analyzeQuote = (exp: Value) => (envs: Env[]) => exp[1];
 
-const analyzeIf = (exp: Exp) => {
+const analyzeIf = (exp: Value) => {
   const pproc = analyze(exp[1]);
   const cproc = analyze(exp[2]);
   const aproc = analyze(exp[3]);
@@ -193,7 +192,7 @@ const analyzeIf = (exp: Exp) => {
 
 // (cond (p1 es1) (p2 es2) ... (else es)) =>
 // (if p1 es1 (if p2 es2 (if ... es)))
-const analyzeCond = (exp: Exp) =>
+const analyzeCond = (exp: Value) =>
   analyze(
     foldr(
       (x, acc) => {
@@ -208,7 +207,7 @@ const analyzeCond = (exp: Exp) =>
     )
   );
 
-const analyzeSequence = (exps: Exp[]) => {
+const analyzeSequence = (exps: Value[]) => {
   const sequentially = (p1, p2) => (envs: Env[]) => {
     p1(envs);
     return p2(envs);
@@ -226,29 +225,29 @@ const analyzeSequence = (exps: Exp[]) => {
   return firstProc;
 };
 
-const analyzeApplication = (exp: Exp[]) => {
+const analyzeApplication = (exp: Value[]) => {
   const fproc = analyze(exp[0]);
   const aprocs = exp.slice(1).map(analyze);
   return (envs: Env[]) =>
     executeApplicatoin(fproc(envs), aprocs.map(aproc => aproc(envs)));
 };
 
-const analyzeLookupVariableValue = (exp: Exp) => (envs: Env[]) =>
+const analyzeLookupVariableValue = (exp: Value) => (envs: Env[]) =>
   lookupVariableValue(exp, envs);
 
-const analyzeSet = (exp: Exp) => {
+const analyzeSet = (exp: Value) => {
   const vrproc = exp[1];
   const vlproc = analyze(exp[2]);
   return (envs: Env[]) => setVariableValue(vrproc, vlproc(envs), envs);
 };
 
-const analyzeLambda = (exp: Exp) => {
+const analyzeLambda = (exp: Value) => {
   const vars = exp[1];
   const exps = analyzeSequence(exp.slice(2));
   return (envs: Env[]) => new Procedure(vars, exps, envs);
 };
 
-const analyzeDefine = (exp: Exp) => {
+const analyzeDefine = (exp: Value) => {
   if (isPair(exp[1])) {
     // (define (sym args) exps) => (define sym (lambda (args) exps))
     // exp[1].length === 0
@@ -263,7 +262,7 @@ const analyzeDefine = (exp: Exp) => {
   }
 };
 
-const analyzeLet = (exp: Exp) => {
+const analyzeLet = (exp: Value) => {
   // (let ((v1 e1) (v2 e2) ...) exps) => ((lambda (v1 v2 ...) exps) e1 e2 ...)
   const vars = [];
   const args = [];
