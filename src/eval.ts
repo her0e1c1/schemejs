@@ -50,15 +50,16 @@ const cons = (x, y) => {
   return a;
 };
 
+const isTrue = x => x !== false;
 const isEqual = (x, y): boolean => x === y;
 const isNull = (x): boolean => x instanceof Array && x.length === 0;
-const isPair = (x): boolean => x instanceof Array && x.length !== 0;
+const isPair = (x): x is List => x instanceof Array && x.length !== 0;
 
 const theGrobalEnvironment: Env = Object.entries({
   'eq?': isEqual,
   'null?': isNull,
   'pair?': isPair,
-  list: (...xs: any[]) => [...xs],
+  list: (...xs: Value[]) => [...xs],
   '+': fold(add2, 0),
   '-': fold(sub2, 0),
   '*': fold(mul2, 0),
@@ -176,8 +177,6 @@ const isSelfEvaluateing = (exp: Value): boolean =>
   typeof exp === 'string' ||
   typeof exp === 'number' ||
   typeof exp === 'boolean';
-
-const isTrue = x => x !== false;
 
 const analyzeSelfEvaluating = (exp: Value) => (envs: Env[]) => exp;
 
