@@ -93,7 +93,7 @@ export const read = (input: string): Value => {
       }
     } else if (token === "'") {
       return [Sym("'"), readAhead(inport.nextToken())];
-    } else if (token === Sym('eof')) {
+    } else if (token === '') {
       throw 'Unexpected EOF';
     } else {
       return atom(token);
@@ -120,9 +120,9 @@ const atom = (token: Token): Atom => {
 class InPort {
   tokenizer = /\s*(,@|[('`,)]|"(?:[\\].|[^\\"])*"|;.*|[^\s('"`,;)]*)([\s\S]*)/;
   constructor(public input: string) {}
-  nextToken(): Token | undefined {
+  nextToken(): Token {
     if (this.input === '') {
-      return Sym('eof');
+      return '';
     } else {
       const match = this.input.match(this.tokenizer);
       if (!match) {
@@ -134,6 +134,7 @@ class InPort {
       if (m1 !== '' && m1[0] !== ';') {
         return m1;
       }
+      return '';
     }
   }
 }

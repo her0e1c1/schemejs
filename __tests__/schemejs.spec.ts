@@ -25,6 +25,9 @@ describe('read', () => {
 
     expect(read('(1 2 (3 (4) 5))')).toEqual([1, 2, [3, [4], 5]]);
   });
+  it('read error', () => {
+    // expect(read('(')).toThrowError(Error);
+  });
 });
 
 describe('parse', () => {
