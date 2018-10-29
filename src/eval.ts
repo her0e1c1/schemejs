@@ -59,6 +59,7 @@ const theGrobalEnvironment: Env = Object.entries({
   'eq?': isEqual,
   'null?': isNull,
   'pair?': isPair,
+  'list': (...xs:any[])=>[...xs],
   '+': fold(add2, 0),
   '-': fold(sub2, 0),
   '*': fold(mul2, 0),
