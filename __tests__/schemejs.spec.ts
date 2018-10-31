@@ -149,4 +149,12 @@ describe('func', () => {
     expect(parse("(reverse '(1 2))")).toEqual([2, 1]);
     expect(parse("(reverse '(1 2 3))")).toEqual([3, 2, 1]);
   });
+  it('flatten', () => {
+    const e = [1, 2, 3, 4, 5, 6];
+    expect(parse("(flatten '(1 2 3 4 5 6))")).toEqual(e);
+    expect(parse("(flatten '((1 2 3) (4 5) (6)))")).toEqual(e);
+    expect(parse("(flatten '((1 2 3) (4 5) (6)))")).toEqual(e);
+    expect(parse("(flatten '(1 2 3 (4 5) 6))")).toEqual(e);
+    expect(parse("(flatten '(((1) 2 3) ((4 5) 6)))")).toEqual(e);
+  });
 });

@@ -45,4 +45,17 @@
   (if (null? alist) '()
       (append (reverse (cdr alist)) (list (car alist)))))
 
+(define (foldr f last alist)
+  (if (pair? alist)
+      (f (car alist) (foldr f last (cdr alist)))
+      last))
+
+(define (flatten tree)
+  (foldr (lambda (x acc)
+          (if (pair? x)
+              (append (flatten x) acc)
+              (cons x acc)))
+        '()
+        tree))
+
 )
