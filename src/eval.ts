@@ -41,11 +41,7 @@ const cons = (x, y) => {
   if (y.constructor !== Array) {
     return [x, y];
   }
-  const a = [x];
-  for (let i = 0; i < y.length; i++) {
-    a.push(y[i]);
-  }
-  return a;
+  return [x, ...y];
 };
 
 const isTrue = x => x !== false;
