@@ -1,11 +1,31 @@
+// type Instractuion = { label: string; text: string };
+
+class Instruction {
+  _label: string = '';
+  _proc = [];
+  constructor(public text: string) {}
+  get label() {
+    return this._label;
+  }
+  set label(v) {
+    this._label = v;
+  }
+  get proc() {
+    return this._proc;
+  }
+  set proc(v) {
+    this._proc = v;
+  }
+}
+
 class Register {
-  _content?: string = undefined;
+  _content?: any = undefined; // []
   constructor(public name: string) {}
-  get content(): string | undefined {
+  get content(): any | undefined {
     return this._content;
   }
 
-  set content(c: string | undefined) {
+  set content(c: any | undefined) {
     this._content = c;
   }
 }
@@ -61,4 +81,23 @@ class Machine {
     }
     return this.registerTable[name];
   }
+  trace(i: Instruction) {
+    if (this.traceFlag && i.label) {
+      console.log(`${i.label} >>> ${i.text}`);
+    }
+  }
+  execute() {
+    const insts = this.pc.content as Instruction[];
+    if (!insts || insts.length === 0) {
+      return;
+    }
+    const inst = insts[0];
+    this.trace(inst);
+    this.instrCount++;
+    this.execute();
+  }
 }
+
+const advancePC = (pc: Register) => {
+  pc.content = pc.content.slice(1);
+};
